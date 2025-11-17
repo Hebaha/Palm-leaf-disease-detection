@@ -1,0 +1,8 @@
+streamlit
+tensorflow-macos
+tensorflow-metal
+numpy
+pillow
+h5py
+opencv-python-headless
+protobuf
