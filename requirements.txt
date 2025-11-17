@@ -1,6 +1,5 @@
 streamlit
-tensorflow-macos
-tensorflow-metal
+tensorflow==2.12.0
 numpy
 pillow
 h5py
