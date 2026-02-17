@@ -14,18 +14,16 @@ from tensorflow.keras.applications.efficientnet import preprocess_input
 MODEL_PATH = "EfficientNetB0_palm_disease_model.keras"
 LABELS_PATH = "class_labels.json" 
 
-@st.cache_resource # لإبقاء الموديل في الذاكرة وتسريع التطبيق
+@st.cache_resource
 def load_palm_model():
-    try:
-        # المحاولة الأولى: تحميل مباشر
-        return tf.keras.models.load_model(MODEL_PATH, compile=False)
-    except Exception:
-        # المحاولة الثانية: إذا فشل الأول بسبب تعارض الإصدارات
-        import keras
-        return keras.models.load_model(MODEL_PATH, compile=False)
+    # استخدام tf.keras مباشرة لضمان التوافق مع EfficientNetB0
+    return tf.keras.models.load_model(MODEL_PATH, compile=False)
 
-model = load_palm_model()
-
+try:
+    model = load_palm_model()
+except Exception as e:
+    st.error(f"حدث خطأ أثناء تحميل النموذج: {e}")
+    st.stop()
 # ----------------------------
 # Severity Calculation
 # ----------------------------
