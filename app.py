@@ -16,13 +16,13 @@ LABELS_PATH = "class_labels.json"
 
 @st.cache_resource
 def load_palm_model():
-    # استخدام tf.keras مباشرة لضمان التوافق مع EfficientNetB0
-    return tf.keras.models.load_model(MODEL_PATH, compile=False)
+    # تحميل الموديل باستخدام تنسيق Keras 3 الحديث
+    return tf.keras.models.load_model(MODEL_PATH)
 
 try:
     model = load_palm_model()
 except Exception as e:
-    st.error(f"حدث خطأ أثناء تحميل النموذج: {e}")
+    st.error(f"Error: {e}")
     st.stop()
 # ----------------------------
 # Severity Calculation
