@@ -8,12 +8,13 @@ from tensorflow.keras.applications.efficientnet import preprocess_input
 # 1. إعداد المسارات
 MODEL_PATH = "EfficientNetB0_palm_disease_model.keras"
 LABELS_PATH = "class_labels.json" 
-
+# استخدام compile=False يتخطى العديد من تعارضات الإعدادات
+model = tf.keras.models.load_model(MODEL_PATH, compile=False)
 # 2. دالة تحميل الموديل بوضع التوافق
 @st.cache_resource
 def load_palm_model():
     # استخدام الطريقة التقليدية الأكثر استقراراً
-    return tf.keras.models.load_model(MODEL_PATH, compile=False)
+    return model
 
 try:
     model = load_palm_model()
