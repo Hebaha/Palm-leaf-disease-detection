@@ -1,7 +1,6 @@
 streamlit
-tensorflow-cpu==2.15.0
-keras==2.15.0
-numpy<2.0.0
+tensorflow>=2.16.1
+keras>=3.0.0
+numpy
 pillow
-h5py
 matplotlib
