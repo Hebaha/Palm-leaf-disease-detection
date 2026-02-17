@@ -14,12 +14,17 @@ from tensorflow.keras.applications.efficientnet import preprocess_input
 MODEL_PATH = "EfficientNetB0_palm_disease_model.keras"
 LABELS_PATH = "class_labels.json" 
 
-model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+@st.cache_resource # لإبقاء الموديل في الذاكرة وتسريع التطبيق
+def load_palm_model():
+    try:
+        # المحاولة الأولى: تحميل مباشر
+        return tf.keras.models.load_model(MODEL_PATH, compile=False)
+    except Exception:
+        # المحاولة الثانية: إذا فشل الأول بسبب تعارض الإصدارات
+        import keras
+        return keras.models.load_model(MODEL_PATH, compile=False)
 
-with open(LABELS_PATH, "r") as f:
-    idx_to_class = {int(k): v for k, v in json.load(f).items()}
-classes = [idx_to_class[i] for i in range(len(idx_to_class))]
-
+model = load_palm_model()
 
 # ----------------------------
 # Severity Calculation
