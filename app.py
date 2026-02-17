@@ -9,12 +9,23 @@ from tensorflow.keras.applications.efficientnet import preprocess_input
 MODEL_PATH = "EfficientNetB0_palm_disease_model.keras"
 LABELS_PATH = "class_labels.json"
 
+# ----------------------------
+# Load Model & Class Labels
+# ----------------------------
+
+MODEL_PATH = "EfficientNetB0_palm_disease_model.keras"
+LABELS_PATH = "class_labels.json" 
+
 @st.cache_resource
 def load_palm_model():
-    # تحميل الموديل بدون تجميع (compile=False) هو المفتاح لتجاوز تعارض الطبقات
-    return tf.keras.models.load_model(MODEL_PATH, compile=False)
+    # استخدام التنسيق الحديث لـ Keras 3 وتخطي إعادة البناء
+    return tf.keras.saving.load_model(MODEL_PATH, compile=False, safe_mode=False)
 
-model = load_palm_model()
+try:
+    model = load_palm_model()
+except Exception as e:
+    st.error(f"Error loading model: {e}")
+    st.stop()
 
 with open(LABELS_PATH, "r") as f:
     idx_to_class = {int(k): v for k, v in json.load(f).items()}
