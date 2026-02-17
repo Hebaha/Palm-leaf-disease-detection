@@ -5,21 +5,15 @@ from PIL import Image
 import json
 from tensorflow.keras.applications.efficientnet import preprocess_input
 
-# 1. تحميل الموديل والملصقات بأمان
-MODEL_PATH = "EfficientNetB0_palm_disease_model.keras"
-LABELS_PATH = "class_labels.json"
-
-# ----------------------------
-# Load Model & Class Labels
-# ----------------------------
-
+# 1. إعداد المسارات
 MODEL_PATH = "EfficientNetB0_palm_disease_model.keras"
 LABELS_PATH = "class_labels.json" 
 
+# 2. دالة تحميل الموديل بوضع التوافق
 @st.cache_resource
 def load_palm_model():
-    # استخدام التنسيق الحديث لـ Keras 3 وتخطي إعادة البناء
-    return tf.keras.saving.load_model(MODEL_PATH, compile=False, safe_mode=False)
+    # استخدام الطريقة التقليدية الأكثر استقراراً
+    return tf.keras.models.load_model(MODEL_PATH, compile=False)
 
 try:
     model = load_palm_model()
@@ -27,42 +21,43 @@ except Exception as e:
     st.error(f"Error loading model: {e}")
     st.stop()
 
+# تحميل أسماء الأمراض
 with open(LABELS_PATH, "r") as f:
     idx_to_class = {int(k): v for k, v in json.load(f).items()}
 classes = [idx_to_class[i] for i in range(len(idx_to_class))]
 
-# 2. دالة المعالجة المسبقة
-def preprocess_image(img):
+# 3. دالة التنبؤ المحمية
+def predict(img):
     img = img.resize((224, 224)).convert("RGB")
     arr = np.array(img)
     arr = np.expand_dims(arr, axis=0)
-    return preprocess_input(arr)
-
-# 3. دالة التنبؤ (مع معالجة خطأ الـ Tensor المزدوج)
-def predict(img):
-    arr = preprocess_image(img)
+    arr = preprocess_input(arr)
+    
     preds = model.predict(arr)
     
-    # حل مشكلة الخطأ: إذا أرجع الموديل قائمة، نأخذ العنصر الأول فقط
-    if isinstance(preds, list):
-        probs = preds[0][0]
-    else:
+    # حل مشكلة المدخلات المزدوجة (Layer expects 1 input but received 2)
+    if isinstance(preds, (list, tuple)):
         probs = preds[0]
+    else:
+        probs = preds
+        
+    if len(probs.shape) > 1:
+        probs = probs[0]
 
     predicted_idx = np.argmax(probs)
-    return classes[predicted_idx], float(np.max(probs)), probs
+    return classes[predicted_idx], float(np.max(probs))
 
-# --- واجهة المستخدم (UI) كما هي في مشروعك ---
-st.title("🌴 Nekhlawi: Palm Disease Detection")
-uploaded_file = st.file_uploader("Upload Leaf Image", type=["jpg", "png"])
+# --- الواجهة الرسومية ---
+st.markdown("<h1 style='text-align:center; color:#22c55e;'>🌴 Nekhlawi: Disease Detection</h1>", unsafe_allow_html=True)
+
+uploaded_file = st.file_uploader("Upload Palm Leaf Image", type=["jpg", "png", "jpeg"])
 
 if uploaded_file:
-    img = Image.open(uploaded_file)
-    st.image(img, use_column_width=True)
+    image = Image.open(uploaded_file)
+    st.image(image, use_column_width=True)
     
-    label, confidence, all_probs = predict(img)
-    st.success(f"المرض المكتشف: {label}")
-    st.info(f"نسبة الثقة: {confidence*100:.2f}%")
-
-st.markdown("<hr>", unsafe_allow_html=True)
-st.caption("Built with Streamlit + EfficientNetB0")
+    with st.spinner("جاري التحليل..."):
+        label, conf = predict(image)
+        
+    st.success(f"النتيجة: {label}")
+    st.info(f"نسبة الثقة: {conf*100:.2f}%")
