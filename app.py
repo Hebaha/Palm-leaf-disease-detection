@@ -3,27 +3,28 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 import json
-import matplotlib.pyplot as plt
 from tensorflow.keras.applications.efficientnet import preprocess_input
 
-
 # ----------------------------
-# Load Model & Class Labels
+# تحميل الموديل والملصقات بأمان
 # ----------------------------
-
 MODEL_PATH = "EfficientNetB0_palm_disease_model.keras"
-LABELS_PATH = "class_labels.json" 
+LABELS_PATH = "class_labels.json"
 
 @st.cache_resource
 def load_palm_model():
-    # تحميل الموديل باستخدام تنسيق Keras 3 الحديث
-    return tf.keras.models.load_model(MODEL_PATH)
+    # تحميل الموديل بدون تجميع لتجنب أخطاء البنية
+    return tf.keras.models.load_model(MODEL_PATH, compile=False)
 
 try:
     model = load_palm_model()
 except Exception as e:
     st.error(f"Error: {e}")
     st.stop()
+
+with open(LABELS_PATH, "r") as f:
+    idx_to_class = {int(k): v for k, v in json.load(f).items()}
+classes = [idx_to_class[i] for i in range(len(idx_to_class))]
 # ----------------------------
 # Severity Calculation
 # ----------------------------
