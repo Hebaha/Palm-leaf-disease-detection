@@ -9,7 +9,7 @@ from tensorflow.keras.applications.efficientnet import preprocess_input
 st.set_page_config(page_title="Nekhlawi - Palm Disease Detection", page_icon="🌴")
 
 # تأكدي أن هذه الملفات مرفوعة بنفس الأسماء في GitHub
-MODEL_PATH = "my_palm_model.h5" 
+MODEL_PATH = "EfficientNetB0_palm_disease_model.h5" 
 LABELS_PATH = "class_labels.json"
 
 # --- 2. دالة تحميل الموديل بوضع التوافق ---
